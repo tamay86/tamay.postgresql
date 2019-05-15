@@ -1,16 +1,7 @@
 ---
 # tasks file for tamay.postgresql
 
-- set_fact:
-    postgresql_initdb: "/bin/initdb"
-    postgresql_service: "postgresql"
-    postgresql_data_dir: "/var/lib/pgsql/data"
-  when: postgresql_version == ''
-
-- set_fact:
-    postgresql_initdb: "/usr/pgsql-{{ postgresql_version }}/bin/initdb"
-    postgresql_service: "postgresql-{{ postgresql_version }}"
-    postgresql_data_dir: "/var/lib/pgsql/{{ postgresql_version }}/data"
+- include_vars: postgresql{{ postgresql_version }}.yml
   when: postgresql_version != ''
 
 - name: "Install postgresql repo package"

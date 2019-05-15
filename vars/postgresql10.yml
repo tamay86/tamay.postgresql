@@ -1,0 +1,6 @@
+---
+# vars file for tamay.postgresql
+
+postgresql_initdb: "/usr/pgsql-10/bin/initdb"
+postgresql_service: "postgresql-10"
+postgresql_data_dir: "/var/lib/pgsql/10/data"
