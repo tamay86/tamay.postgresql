@@ -1,0 +1,8 @@
+---
+# handlers file for tamay.postgresql
+
+- name: "Restart postgresql"
+  service:
+    name: "{{ postgresql_service }}"
+    state: restarted
+  listen: restart_postgresql

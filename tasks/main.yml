@@ -1,0 +1,72 @@
+---
+# tasks file for tamay.postgresql
+
+- set_fact:
+    postgresql_initdb: "/bin/initdb"
+    postgresql_service: "postgresql"
+    postgresql_data_dir: "/var/lib/pgsql/data"
+  when: postgresql_version == ''
+
+- set_fact:
+    postgresql_initdb: "/usr/pgsql-{{ postgresql_version }}/bin/initdb"
+    postgresql_service: "postgresql-{{ postgresql_version }}"
+    postgresql_data_dir: "/var/lib/pgsql/{{ postgresql_version }}/data"
+  when: postgresql_version != ''
+
+- name: "Install postgresql repo package"
+  package:
+    state: present
+    name: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+
+- name: "Install postgresql packages"
+  package:
+    state: present
+    name:
+      - postgresql{{ postgresql_version }}-server
+      - python-psycopg2
+
+- name: "Initialize postgresql"
+  shell: "{{ postgresql_initdb }} --pgdata {{ postgresql_data_dir }}"
+  args:
+    creates: "{{ postgresql_data_dir }}/pg_hba.conf"
+  become: yes
+  become_user: postgres
+
+- name: "Copy pg_hba.conf"
+  template:
+    src: pg_hba.conf.j2
+    dest: "{{ postgresql_data_dir }}/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: 0600
+  notify: restart_postgresql
+
+- name: "Start and enable postgresql service"
+  service:
+    name: "{{ postgresql_service }}"
+    state: started
+    enabled: yes
+
+- name: "Create postgresql databases"
+  postgresql_db:
+    state: present
+    name: "{{ item.name }}"
+    encoding: "{{ item.encoding | default(omit) }}"
+    lc_collate: "{{ item.lc_collate | default(omit) }}"
+    lc_ctype: "{{ item.lc_ctype | default(omit) }}"
+    template: "{{ item.template | default(omit) }}"
+  loop: "{{ postgresql_databases }}"
+  become: yes
+  become_user: postgres
+
+- name: "Create postgresql users"
+  postgresql_user:
+    state: present
+    name: "{{ item.name }}"
+    db: "{{ item.db | default(omit) }}"
+    password: "{{ item.password | default(omit) }}"
+    priv: "{{ item.priv | default(omit) }}"
+    role_attr_flags: "{{ item.role_attr_flags | default(omit) }}"
+  loop: "{{ postgresql_users }}"
+  become: yes
+  become_user: postgres

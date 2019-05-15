@@ -1,0 +1,29 @@
+Vagrant.configure(2) do |config|
+
+  if Vagrant.has_plugin?("vagrant-hostmanager")
+    config.hostmanager.enabled = true
+    config.hostmanager.manage_host = true
+    config.hostmanager.manage_guest = false
+  end
+
+  # General Libvirt Connection
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.host = "localhost"
+    libvirt.uri = 'qemu+unix:///system'
+    libvirt.driver = 'kvm'
+    libvirt.memory = '512'
+    libvirt.cpus = '1'
+  end
+
+  config.vm.define "postgresql" do |postgresql|
+    postgresql.vm.box = "centos/7"
+    postgresql.vm.network "private_network", type: "dhcp"
+    postgresql.vm.hostname = "postgresql.example.com"
+    postgresql.vm.provision "shell",
+        inline: "yum -y -q reinstall glibc-common && localectl set-locale LANG=de_DE.utf8"
+    postgresql.vm.provision "ansible" do |ansible|
+        ansible.playbook = "test.yml"
+    end
+  end
+
+end

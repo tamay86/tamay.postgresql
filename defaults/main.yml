@@ -1,0 +1,53 @@
+---
+# defaults file for tamay.postgresql
+
+# Postgresql version
+# Leave empty to use centos default repo
+# Define version number to use postgres repo
+# Possible values: '', '94', '95', '96', '10', '11'
+postgresql_version: ''
+
+# Authentication in pg_hba.conf
+postgresql_hba:
+  - name: '"local" is for Unix domain socket connections only'
+    type: local
+    database: all
+    user: all
+    method: trust
+  - name: 'IPv4 local connections:'
+    type: host
+    database: all
+    user: all
+    address: 127.0.0.1/32
+    method: trust
+  - name: 'IPv6 local connections:'
+    type: host
+    database: all
+    user: all
+    address: '::1/128'
+    method: trust
+
+# Databases to create
+postgresql_databases: []
+# Example:
+#postgresql_databases:
+#  - name: test
+#  - name: test2
+#    encoding: UTF-8
+#    lc_collate: de_DE.UTF-8
+#    lc_ctype: de_DE.UTF-8
+#    template: template0
+#  - name: test3
+#    encoding: UTF-8
+#    lc_collate: en_US.UTF-8
+#    lc_ctype: en_US.UTF-8
+#    template: template0
+
+# Database users to create
+postgresql_users: []
+# Example:
+#postgresql_users:
+#  - name: test
+#    password: test
+#    db: test
+#    priv: ALL
